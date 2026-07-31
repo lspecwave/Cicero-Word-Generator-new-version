@@ -161,6 +161,7 @@ Copy-Item -Path WordGenerator\bin\Release\* -Destination ReleaseBuilds\Cicero -F
   - 已撤回错误的“按可见顺序重新编号”方案。
 - 保留真实 timestep index 显示，不改变 sequence 顺序。
 - 添加运行期间 loop copy 的 `finally` cleanup。
+- 更新 `.gitignore`，GitHub 同步时只放行 `ReleaseBuilds\Cicero` 这一套 Cicero UI build；其他 release build 目录继续忽略。
 - build 成功，最新 UI exe 位于 `ReleaseBuilds\Cicero\WordGenerator.exe`。
 
 ## Future Change Template

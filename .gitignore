@@ -15,3 +15,12 @@ obj/
 *.pdb
 *.vshost.exe.manifest
 TestResults/
+
+# Release builds: only track the Cicero UI build that should be synced to GitHub.
+# Other release build folders, temporary timestamp builds, logs, and backups stay ignored.
+ReleaseBuilds/*
+!ReleaseBuilds/.gitignore
+!ReleaseBuilds/Cicero/
+!ReleaseBuilds/Cicero/**
+ReleaseBuilds/Cicero/backup/
+ReleaseBuilds/Cicero/RunLogs/
