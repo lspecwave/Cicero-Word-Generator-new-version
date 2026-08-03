@@ -164,6 +164,17 @@ Copy-Item -Path WordGenerator\bin\Release\* -Destination ReleaseBuilds\Cicero -F
 - 更新 `.gitignore`，GitHub 同步时只放行 `ReleaseBuilds\Cicero` 这一套 Cicero UI build；其他 release build 目录继续忽略。
 - build 成功，最新 UI exe 位于 `ReleaseBuilds\Cicero\WordGenerator.exe`。
 
+### 2026-08-03
+
+- 改动目的：修复 run 期间主窗口只读锁结束后，点击 `Unlock Lists` 时 list 顶部 checkbox 仍保持灰色禁用的问题。
+- 涉及文件：
+  - `WordGenerator\Controls\VariablesTab\ListEditorPanel.cs`
+  - `WordGenerator\Controls\VariablesTab\VariablesAndListPage.cs`
+- 行为变化：`Unlock Lists` 现在会显式恢复每个 `ListEditorPanel` 内部 checkbox、label 和按 list enabled 状态控制的编辑控件，不再被 run-time read-only restore 留下的 `Enabled=false` 状态卡住。
+- 是否影响 `.seq` 文件：不影响。只修复 UI 解锁状态同步，不改变 list 数据、list enabled 数据或 list locked 数据。
+- Build 结果：Cicero UI build 成功，并已覆盖默认 release 目录。
+- 最新 exe 路径：`ReleaseBuilds\Cicero\WordGenerator.exe`。
+
 ## Future Change Template
 
 以后追加改动时使用这个格式：

@@ -398,7 +398,7 @@ namespace WordGenerator.Controls
         {
             foreach (ListEditorPanel pan in listPanels)
             {
-                pan.Enabled = false;
+                pan.setListLocked(true);
             }
             Storage.sequenceData.Lists.ListLocked = true;
 
@@ -428,7 +428,7 @@ namespace WordGenerator.Controls
             this.lockButton.Text = "Lock Lists.";
             foreach (ListEditorPanel pan in listPanels)
             {
-                pan.Enabled = true;
+                pan.setListLocked(false);
             }
 
            // variablesPanel.Enabled = true;

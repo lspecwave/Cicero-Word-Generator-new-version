@@ -106,6 +106,19 @@ namespace WordGenerator.Controls
             }
         }
 
+        public void setListLocked(bool listLocked)
+        {
+            this.Enabled = !listLocked;
+
+            if (!listLocked)
+            {
+                this.enabledBox.Enabled = true;
+                this.listName.Enabled = true;
+                this.lineCount.Enabled = true;
+                updateUIToReflectedEnabled();
+            }
+        }
+
         private void setTimesButtonText()
         {
             if (Storage.sequenceData == null) return;
