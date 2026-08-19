@@ -917,20 +917,11 @@ namespace WordGenerator
                 }
 
 
-                // Create timestep "loop copies" if there are timestep loops in use
-                bool useLoops = false;
-                foreach (TimestepGroup tsg in sequence.TimestepGroups)
-                {
-                    if (tsg.LoopTimestepGroup && sequence.TimestepGroupIsLoopable(tsg) && tsg.LoopCountInt > 1)
-                    {
-                        useLoops = true;
-                    }
-                }
+                sequence.cleanupLoopCopies();
+                bool useLoops = sequence.UsesActiveTimestepGroupLoops();
                 if (useLoops)
                 {
-                    addMessageLogText(this, new MessageEvent("This sequence makes use of looping timestep groups. Creating temporary loop copies..."));
-                    sequence.createLoopCopies();
-                    addMessageLogText(this, new MessageEvent("...done"));
+                    addMessageLogText(this, new MessageEvent("This sequence makes use of looping timestep groups. Loop copies will be created on the server during buffer generation."));
                 }
 
                 try

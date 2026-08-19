@@ -32,7 +32,14 @@ Copy-Item -Path WordGenerator\bin\Release\* -Destination ReleaseBuilds\Cicero -F
 
 `ReleaseBuilds\Cicero\WordGenerator.exe`
 
-时间戳：`2026-07-31 11:24:40`
+时间戳：`2026-08-19 14:34:54`
+
+最新确认的 Atticus exe：
+
+- `ReleaseBuilds\Atticus\x86\AtticusServer.exe`
+  - 时间戳：`2026-08-19 14:35:02`
+- `ReleaseBuilds\Atticus\x64\AtticusServer.exe`
+  - 时间戳：`2026-08-19 14:35:10`
 
 ## 当前改动汇总
 
@@ -174,6 +181,27 @@ Copy-Item -Path WordGenerator\bin\Release\* -Destination ReleaseBuilds\Cicero -F
 - 是否影响 `.seq` 文件：不影响。只修复 UI 解锁状态同步，不改变 list 数据、list enabled 数据或 list locked 数据。
 - Build 结果：Cicero UI build 成功，并已覆盖默认 release 目录。
 - 最新 exe 路径：`ReleaseBuilds\Cicero\WordGenerator.exe`。
+
+### 2026-08-19
+
+- 改动目的：解决 timestep group loop 大量次数时，Cicero 在 `Sending sequence data` 阶段因为客户端预先展开 loop copy 而明显变慢的问题。
+- 涉及文件：
+  - `DataStructures\SequenceData\SequenceData.cs`
+  - `WordGenerator\Controls\Dialogs\RunForm.cs`
+  - `AtticusServer\ServerRuntime\AtticusServerCommunicator.cs`
+  - `CiceroSuiteUnitTests\SequenceDataTest.cs`
+  - `.gitignore`
+- 行为变化：
+  - Cicero 客户端发送 sequence 前不再执行 `sequence.createLoopCopies()`，只清理旧的 loop copy 并发送原始 sequence。
+  - `SequenceDuration` 和 `getTimeStepAtTime()` 在没有物理 loop copy 时也能按 timestep group loop count 计算逻辑时长和当前 timestep。
+  - Atticus 在 `generateBuffers` 服务器端临时展开 loop copy，用于真实 buffer 生成，因此 loop 4000 次不会把客户端发送数据量放大 4000 倍。
+  - `.gitignore` 已放行 `ReleaseBuilds\Atticus\x86` 和 `ReleaseBuilds\Atticus\x64`，便于同步编译后的 Atticus 文件。
+- 是否影响 `.seq` 文件：不改变 `.seq` 文件格式，不自动改写 sequence；已有 timestep group loop 设置继续按原含义运行。
+- Build 结果：Cicero Release、Atticus Release x86、Atticus Release x64 均编译成功；Atticus 仍有既有 NI assembly version/DAQmx x64 架构 warning。
+- 最新 exe 路径：
+  - `ReleaseBuilds\Cicero\WordGenerator.exe`，时间戳 `2026-08-19 14:34:54`
+  - `ReleaseBuilds\Atticus\x86\AtticusServer.exe`，时间戳 `2026-08-19 14:35:02`
+  - `ReleaseBuilds\Atticus\x64\AtticusServer.exe`，时间戳 `2026-08-19 14:35:10`
 
 ## Future Change Template
 

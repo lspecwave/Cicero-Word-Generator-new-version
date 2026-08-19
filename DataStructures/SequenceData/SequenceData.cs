@@ -247,14 +247,10 @@ namespace DataStructures
                 if (this.TimeSteps == null)
                     return 0;
 
-                double ans = 0;
+                if (containsLoopCopies())
+                    return physicalSequenceDuration();
 
-                foreach (TimeStep step in enabledTimeSteps())
-                {
-                    ans += step.StepDuration.getBaseValue();
-                }
-
-                return ans;
+                return logicalSequenceDuration();
             }
         }
 
@@ -607,6 +603,117 @@ namespace DataStructures
             return true;
         }
 
+        public bool UsesActiveTimestepGroupLoops()
+        {
+            foreach (TimestepGroup tsg in TimestepGroups)
+            {
+                if (timestepGroupLoopIsActive(tsg))
+                    return true;
+            }
+            return false;
+        }
+
+        private bool timestepGroupLoopIsActive(TimestepGroup tsg)
+        {
+            if (tsg == null)
+                return false;
+            if (!tsg.LoopTimestepGroup)
+                return false;
+            if (tsg.LoopCountInt <= 1)
+                return false;
+            if (!TimestepGroupIsLoopable(tsg))
+                return false;
+            return enabledTimestepGroupDuration(tsg) > 0;
+        }
+
+        private bool containsLoopCopies()
+        {
+            foreach (TimeStep step in TimeSteps)
+            {
+                if (step.LoopCopy)
+                    return true;
+            }
+            return false;
+        }
+
+        private double physicalSequenceDuration()
+        {
+            double ans = 0;
+            foreach (TimeStep step in enabledTimeSteps())
+            {
+                ans += step.StepDuration.getBaseValue();
+            }
+            return ans;
+        }
+
+        private double logicalSequenceDuration()
+        {
+            double ans = 0;
+            for (int stepID = 0; stepID < TimeSteps.Count; stepID++)
+            {
+                TimeStep step = TimeSteps[stepID];
+                TimestepGroup tsg = step.MyTimestepGroup;
+
+                if (timestepGroupLoopIsActive(tsg) && isFirstTimestepGroupMember(stepID, tsg))
+                {
+                    ans += enabledTimestepGroupDuration(tsg) * tsg.LoopCountInt;
+                    stepID += timestepGroupMemberCount(tsg) - 1;
+                    continue;
+                }
+
+                if (step.StepEnabled)
+                    ans += step.StepDuration.getBaseValue();
+            }
+            return ans;
+        }
+
+        private double enabledTimestepGroupDuration(TimestepGroup tsg)
+        {
+            double ans = 0;
+            foreach (TimeStep step in TimeSteps)
+            {
+                if (step.MyTimestepGroup == tsg && step.StepEnabled)
+                    ans += step.StepDuration.getBaseValue();
+            }
+            return ans;
+        }
+
+        private List<TimeStep> enabledTimestepGroupMembers(TimestepGroup tsg)
+        {
+            List<TimeStep> ans = new List<TimeStep>();
+            foreach (TimeStep step in TimeSteps)
+            {
+                if (step.MyTimestepGroup == tsg && step.StepEnabled)
+                    ans.Add(step);
+            }
+            return ans;
+        }
+
+        private int timestepGroupMemberCount(TimestepGroup tsg)
+        {
+            int ans = 0;
+            foreach (TimeStep step in TimeSteps)
+            {
+                if (step.MyTimestepGroup == tsg)
+                    ans++;
+            }
+            return ans;
+        }
+
+        private bool isFirstTimestepGroupMember(int stepID, TimestepGroup tsg)
+        {
+            if (tsg == null)
+                return false;
+            if (TimeSteps[stepID].MyTimestepGroup != tsg)
+                return false;
+            for (int i = 0; i < stepID; i++)
+            {
+                if (TimeSteps[i].MyTimestepGroup == tsg)
+                    return false;
+            }
+            return true;
+        }
+
 
         public string insertSequence(SequenceData insertMe, TimeStep insertAfter)
         {
@@ -664,11 +771,45 @@ namespace DataStructures
         {
             if (time < 0) return null;
 
-            foreach (TimeStep step in enabledTimeSteps())
+            if (containsLoopCopies())
             {
-                time -= step.StepDuration.getBaseValue();
-                if (time <= 0)
-                    return step;
+                foreach (TimeStep step in enabledTimeSteps())
+                {
+                    time -= step.StepDuration.getBaseValue();
+                    if (time <= 0)
+                        return step;
+                }
+                return null;
+            }
+
+            for (int stepID = 0; stepID < TimeSteps.Count; stepID++)
+            {
+                TimeStep step = TimeSteps[stepID];
+                TimestepGroup tsg = step.MyTimestepGroup;
+
+                if (timestepGroupLoopIsActive(tsg) && isFirstTimestepGroupMember(stepID, tsg))
+                {
+                    List<TimeStep> memberSteps = enabledTimestepGroupMembers(tsg);
+                    for (int loop = 0; loop < tsg.LoopCountInt; loop++)
+                    {
+                        foreach (TimeStep memberStep in memberSteps)
+                        {
+                            time -= memberStep.StepDuration.getBaseValue();
+                            if (time <= 0)
+                                return memberStep;
+                        }
+                    }
+
+                    stepID += timestepGroupMemberCount(tsg) - 1;
+                    continue;
+                }
+
+                if (step.StepEnabled)
+                {
+                    time -= step.StepDuration.getBaseValue();
+                    if (time <= 0)
+                        return step;
+                }
             }
             return null;
         }

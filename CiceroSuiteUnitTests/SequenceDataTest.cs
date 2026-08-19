@@ -197,5 +197,51 @@ namespace CiceroSuiteUnitTests
             Assert.IsNull(target.getTimeStepAtTime(-1));
             Assert.IsNull(target.getTimeStepAtTime(10));
         }
+
+        [TestMethod()]
+        public void timestepGroupLoopDurationWithoutLoopCopiesTest()
+        {
+            SequenceData target = new SequenceData();
+            TimestepGroup group = new TimestepGroup("pulse loop");
+            group.LoopTimestepGroup = true;
+            group.LoopCount.setBaseValue(3);
+            target.TimestepGroups.Add(group);
+
+            TimeStep pre = createEnabledStep("pre", .5);
+            TimeStep high = createEnabledStep("high", .1);
+            TimeStep low = createEnabledStep("low", .2);
+            TimeStep post = createEnabledStep("post", .4);
+            high.MyTimestepGroup = group;
+            low.MyTimestepGroup = group;
+
+            target.TimeSteps.Add(pre);
+            target.TimeSteps.Add(high);
+            target.TimeSteps.Add(low);
+            target.TimeSteps.Add(post);
+
+            Assert.AreEqual(1.8, target.SequenceDuration, .000000001);
+            Assert.AreEqual("pre", target.getTimeStepAtTime(.25).StepName);
+            Assert.AreEqual("high", target.getTimeStepAtTime(.55).StepName);
+            Assert.AreEqual("low", target.getTimeStepAtTime(.65).StepName);
+            Assert.AreEqual("high", target.getTimeStepAtTime(.85).StepName);
+            Assert.AreEqual("low", target.getTimeStepAtTime(1.3).StepName);
+            Assert.AreEqual("post", target.getTimeStepAtTime(1.5).StepName);
+            Assert.IsNull(target.getTimeStepAtTime(1.9));
+            Assert.AreEqual(4, target.TimeSteps.Count);
+
+            target.createLoopCopies();
+            Assert.AreEqual(1.8, target.SequenceDuration, .000000001);
+            Assert.AreEqual(8, target.TimeSteps.Count);
+            target.cleanupLoopCopies();
+            Assert.AreEqual(4, target.TimeSteps.Count);
+        }
+
+        private static TimeStep createEnabledStep(string name, double duration)
+        {
+            TimeStep ans = new TimeStep(name);
+            ans.StepEnabled = true;
+            ans.StepDuration = new DimensionedParameter(Units.s, duration);
+            return ans;
+        }
     }
 }

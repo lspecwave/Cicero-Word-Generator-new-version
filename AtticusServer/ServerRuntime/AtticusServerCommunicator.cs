@@ -394,8 +394,17 @@ namespace AtticusServer
                         return BufferGenerationStatus.Failed_Sequence_Null;
                     }
 
+                    sequence.cleanupLoopCopies();
+
                     // This is redundant.
                     sequence.ListIterationNumber = listIterationNumber;
+
+                    if (sequence.UsesActiveTimestepGroupLoops())
+                    {
+                        messageLog(this, new MessageEvent("This sequence makes use of looping timestep groups. Creating temporary loop copies on the server..."));
+                        sequence.createLoopCopies();
+                        messageLog(this, new MessageEvent("...done"));
+                    }
 
                     #region Generate variable timebase FPGA task
 
@@ -884,6 +893,8 @@ namespace AtticusServer
                 }
                 catch (Exception e)
                 {
+                    if (sequence != null)
+                        sequence.cleanupLoopCopies();
                     messageLog(this, new MessageEvent("Failed buffer generation due to exception: " + e.Message + "\n" + e.StackTrace));
                     displayError();
                     return BufferGenerationStatus.Failed_Invalid_Data;
