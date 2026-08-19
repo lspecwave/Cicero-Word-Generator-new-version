@@ -1023,6 +1023,15 @@ namespace WordGenerator
                 }
             }
 
+            try
+            {
+                if (variablesEditor != null && !variablesEditor.IsDisposed)
+                    variablesEditor.ApplyListLockControlState();
+            }
+            catch
+            {
+            }
+
             sequenceReadOnlyEnabledStates.Clear();
             sequenceReadOnlyTextBoxStates.Clear();
             sequenceReadOnlyToolStripItemStates.Clear();

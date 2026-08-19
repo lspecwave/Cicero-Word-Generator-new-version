@@ -32,7 +32,7 @@ Copy-Item -Path WordGenerator\bin\Release\* -Destination ReleaseBuilds\Cicero -F
 
 `ReleaseBuilds\Cicero\WordGenerator.exe`
 
-时间戳：`2026-08-19 14:34:54`
+时间戳：`2026-08-19 15:04:00`
 
 最新确认的 Atticus exe：
 
@@ -202,6 +202,23 @@ Copy-Item -Path WordGenerator\bin\Release\* -Destination ReleaseBuilds\Cicero -F
   - `ReleaseBuilds\Cicero\WordGenerator.exe`，时间戳 `2026-08-19 14:34:54`
   - `ReleaseBuilds\Atticus\x86\AtticusServer.exe`，时间戳 `2026-08-19 14:35:02`
   - `ReleaseBuilds\Atticus\x64\AtticusServer.exe`，时间戳 `2026-08-19 14:35:10`
+
+### 2026-08-19
+
+- 改动目的：修复 run 自动锁定 lists、read-only 恢复后，点击 `Unlock Lists` 时 list 顶部 checkbox 仍可能保持灰色禁用的回归问题。
+- 涉及文件：
+  - 外层：`WordGenerator\Controls\VariablesTab\ListEditorPanel.cs`
+  - 外层：`WordGenerator\Controls\VariablesTab\VariablesAndListPage.cs`
+  - 外层：`WordGenerator\Controls\MainClientForm.cs`
+  - newversion：`WordGenerator\Controls\VariablesTab\ListEditorPanel.cs`
+  - newversion：`WordGenerator\Controls\VariablesTab\VariablesAndListPage.cs`
+  - newversion：`WordGenerator\Controls\MainClientForm.cs`
+- 行为变化：`Unlock Lists` 不再只恢复 panel 本身，而是按真实 `Storage.sequenceData.Lists.ListLocked` 重新同步 list panel、顶部 checkbox、变量编辑器和 add button 状态；read-only mode 结束恢复控件状态后也会再同步一次 list lock UI。
+- 是否影响 `.seq` 文件：不影响；只修复 UI enabled 状态，不改变 list 数据或 `.seq` 保存格式。
+- Build 结果：外层 Cicero Release 和 newversion Cicero Release 均编译成功。
+- 最新 exe 路径：
+  - 外层：`ReleaseBuilds\Cicero\WordGenerator.exe`，时间戳 `2026-08-19 15:03:49`
+  - newversion：`ReleaseBuilds\Cicero\WordGenerator.exe`，时间戳 `2026-08-19 15:04:00`
 
 ## Future Change Template
 

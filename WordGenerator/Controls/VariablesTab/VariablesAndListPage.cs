@@ -396,49 +396,52 @@ namespace WordGenerator.Controls
 
         private void lockLists()
         {
-            foreach (ListEditorPanel pan in listPanels)
-            {
-                pan.setListLocked(true);
-            }
             Storage.sequenceData.Lists.ListLocked = true;
-
-            //variablesPanel.Enabled = false;
-
-
-            foreach (VariableEditor ve in variableEditors)
-            {
-                ve.ListLocked = true;
-            }
-
-
-            addButton.Enabled = false;
 
             for (int i = 0; i < ListData.NLists; i++)
             {
                 Storage.sequenceData.Lists.Lists[i] = listPanels[i].parseList();
             }
 
-            this.lockButton.Text = Storage.sequenceData.Lists.iterationsCount() + " iterations.\r\nUnlock Lists.";
+            ApplyListLockControlState();
 
         }
 
         private void unlockLists()
         {
             Storage.sequenceData.Lists.ListLocked = false;
-            this.lockButton.Text = "Lock Lists.";
-            foreach (ListEditorPanel pan in listPanels)
+            ApplyListLockControlState();
+        }
+
+        public void ApplyListLockControlState()
+        {
+            if (this.InvokeRequired)
             {
-                pan.setListLocked(false);
+                this.BeginInvoke(new MethodInvoker(ApplyListLockControlState));
+                return;
             }
 
-           // variablesPanel.Enabled = true;
+            if (Storage.sequenceData == null || Storage.sequenceData.Lists == null)
+                return;
+
+            bool listLocked = Storage.sequenceData.Lists.ListLocked;
+
+            foreach (ListEditorPanel pan in listPanels)
+            {
+                pan.setListLocked(listLocked);
+            }
 
             foreach (VariableEditor ve in variableEditors)
             {
-                ve.ListLocked = false;
+                ve.ListLocked = listLocked;
             }
 
-            addButton.Enabled = true;
+            addButton.Enabled = !listLocked;
+
+            if (listLocked)
+                this.lockButton.Text = Storage.sequenceData.Lists.iterationsCount() + " iterations.\r\nUnlock Lists.";
+            else
+                this.lockButton.Text = "Lock Lists.";
         }
 
         private void calibEnabled_CheckedChanged(object sender, EventArgs e)
